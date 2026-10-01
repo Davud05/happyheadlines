@@ -1,0 +1,116 @@
+name: happyheadlines
+
+x-postgres: &postgres
+  image: postgres:17-alpine
+  environment: &postgres-env
+    POSTGRES_USER: hh
+    POSTGRES_PASSWORD: hh
+  healthcheck:
+    test: ["CMD-SHELL", "pg_isready -U hh"]
+    interval: 5s
+    timeout: 3s
+    retries: 20
+  restart: unless-stopped
+
+x-dotnet-env: &dotnet-env
+  Seq__Url: http://seq:5341
+  Otlp__Endpoint: http://otel-collector:4317
+
+x-article-service: &article-service
+  image: happyheadlines/article-service
+  build:
+    context: .
+    args: { SERVICE: ArticleService }
+  networks: [backbone, article-lane]
+  restart: unless-stopped
+  depends_on: &article-dbs
+    article-db-africa: { condition: service_healthy }
+    article-db-antarctica: { condition: service_healthy }
+    article-db-asia: { condition: service_healthy }
+    article-db-europe: { condition: service_healthy }
+    article-db-northamerica: { condition: service_healthy }
+    article-db-oceania: { condition: service_healthy }
+    article-db-southamerica: { condition: service_healthy }
+    article-db-global: { condition: service_healthy }
+
+x-article-env: &article-env
+  <<: *dotnet-env
+  ConnectionStrings__Africa: Host=article-db-africa;Database=articles;Username=hh;Password=hh
+  ConnectionStrings__Antarctica: Host=article-db-antarctica;Database=articles;Username=hh;Password=hh
+  ConnectionStrings__Asia: Host=article-db-asia;Database=articles;Username=hh;Password=hh
+  ConnectionStrings__Europe: Host=article-db-europe;Database=articles;Username=hh;Password=hh
+  ConnectionStrings__NorthAmerica: Host=article-db-northamerica;Database=articles;Username=hh;Password=hh
+  ConnectionStrings__Oceania: Host=article-db-oceania;Database=articles;Username=hh;Password=hh
+  ConnectionStrings__SouthAmerica: Host=article-db-southamerica;Database=articles;Username=hh;Password=hh
+  ConnectionStrings__Global: Host=article-db-global;Database=articles;Username=hh;Password=hh
+
+services:
+  # ---------------------------------------------------------------- ArticleService swimlane
+  article-lb:
+    image: nginx:1.29-alpine
+    volumes:
+      - ./infra/nginx/article-lb.conf:/etc/nginx/conf.d/default.conf:ro
+    ports: ["8000:80"]
+    networks: [backbone]
+    depends_on: [article-service-1, article-service-2, article-service-3]
+    restart: unless-stopped
+
+  article-service-1:
+    <<: *article-service
+    environment: { <<: *article-env, INSTANCE_ID: article-service-1 }
+  article-service-2:
+    <<: *article-service
+    environment: { <<: *article-env, INSTANCE_ID: article-service-2 }
+  article-service-3:
+    <<: *article-service
+    environment: { <<: *article-env, INSTANCE_ID: article-service-3 }
+
+  article-db-africa: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-africa:/var/lib/postgresql/data] }
+  article-db-antarctica: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-antarctica:/var/lib/postgresql/data] }
+  article-db-asia: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-asia:/var/lib/postgresql/data] }
+  article-db-europe: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-europe:/var/lib/postgresql/data] }
+  article-db-northamerica: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-northamerica:/var/lib/postgresql/data] }
+  article-db-oceania: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-oceania:/var/lib/postgresql/data] }
+  article-db-southamerica: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-southamerica:/var/lib/postgresql/data] }
+  article-db-global: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-global:/var/lib/postgresql/data] }
+
+  # ---------------------------------------------------------------- Observability
+  seq:
+    image: datalust/seq:latest
+    environment:
+      ACCEPT_EULA: "Y"
+      SEQ_FIRSTRUN_NOAUTHENTICATION: "true"
+    ports: ["5380:80"]
+    networks: [backbone]
+    volumes: [seq:/data]
+    restart: unless-stopped
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:latest
+    command: ["--config=/etc/otelcol/config.yaml"]
+    volumes:
+      - ./infra/otel-collector.yaml:/etc/otelcol/config.yaml:ro
+    networks: [backbone]
+    depends_on: [jaeger]
+    restart: unless-stopped
+
+  jaeger:
+    image: jaegertracing/jaeger:latest
+    ports: ["16686:16686"]
+    networks: [backbone]
+    restart: unless-stopped
+
+networks:
+  backbone:
+  article-lane:
+
+volumes:
+  article-africa:
+  article-antarctica:
+  article-asia:
+  article-europe:
+  article-northamerica:
+  article-oceania:
+  article-southamerica:
+  article-global:
+  seq:
