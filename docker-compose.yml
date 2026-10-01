@@ -74,6 +74,35 @@ services:
   article-db-southamerica: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-southamerica:/var/lib/postgresql/data] }
   article-db-global: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: articles }, networks: [article-lane], volumes: [article-global:/var/lib/postgresql/data] }
 
+  # ---------------------------------------------------------------- CommentService swimlane
+  comment-service:
+    build: { context: ., args: { SERVICE: CommentService } }
+    environment:
+      <<: *dotnet-env
+      ConnectionStrings__Comments: Host=comment-db;Database=comments;Username=hh;Password=hh
+      Services__Profanity: http://profanity-service:8080
+    ports: ["8001:8080"]
+    networks: [backbone, comment-lane]
+    depends_on:
+      comment-db: { condition: service_healthy }
+    restart: unless-stopped
+
+  comment-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: comments }, networks: [comment-lane], volumes: [comments:/var/lib/postgresql/data] }
+
+  # ---------------------------------------------------------------- ProfanityService swimlane
+  profanity-service:
+    build: { context: ., args: { SERVICE: ProfanityService } }
+    environment:
+      <<: *dotnet-env
+      ConnectionStrings__Profanity: Host=profanity-db;Database=profanity;Username=hh;Password=hh
+    ports: ["8002:8080"]
+    networks: [backbone, profanity-lane]
+    depends_on:
+      profanity-db: { condition: service_healthy }
+    restart: unless-stopped
+
+  profanity-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: profanity }, networks: [profanity-lane], volumes: [profanity:/var/lib/postgresql/data] }
+
   # ---------------------------------------------------------------- Observability
   seq:
     image: datalust/seq:latest
@@ -103,8 +132,12 @@ services:
 networks:
   backbone:
   article-lane:
+  comment-lane:
+  profanity-lane:
 
 volumes:
+  comments:
+  profanity:
   article-africa:
   article-antarctica:
   article-asia:
