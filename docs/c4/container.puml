@@ -1,0 +1,68 @@
+@startuml container
+!include <C4/C4_Container>
+
+LAYOUT_TOP_DOWN()
+
+title Happy Headlines - Containers (C4 level 2)
+
+Person(publisher, "Publisher", "Writes and publishes articles.")
+Person(reader, "Reader", "Reads, comments and subscribes.")
+
+System_Boundary(hh, "Happy Headlines") {
+    Container(webapp, "Webapp", "ASP.NET Core Razor Pages", "Where publishers write drafts and publish articles.")
+    Container(website, "Website", "ASP.NET Core Razor Pages", "Shows the most recent articles with one focus article on top.")
+
+    Container(draftService, "DraftService", "ASP.NET Core REST API", "Saves and retrieves drafts of articles.")
+    ContainerDb(draftDb, "DraftDatabase", "PostgreSQL", "Stores all drafts of articles.")
+
+    Container(publisherService, "PublisherService", "ASP.NET Core REST API", "Finalises and publishes articles.")
+    Container(profanityService, "ProfanityService", "ASP.NET Core REST API", "Filters out inappropriate language in articles and comments.")
+    ContainerDb(profanityDb, "ProfanityDatabase", "PostgreSQL", "Stores all prohibited words.")
+
+    ContainerQueue(articleQueue, "ArticleQueue", "RabbitMQ", "Holds newly published articles.")
+    Container(articleService, "ArticleService", "ASP.NET Core REST API", "Delivers published articles to the subsystems that request them.")
+    ContainerDb(articleDb, "ArticleDatabase", "PostgreSQL", "Stores all published articles.")
+
+    Container(commentService, "CommentService", "ASP.NET Core REST API", "Handles comments on articles.")
+    ContainerDb(commentDb, "CommentDatabase", "PostgreSQL", "Stores all comments posted on articles.")
+
+    Container(subscriberService, "SubscriberService", "ASP.NET Core REST API", "Handles newsletter subscriptions.")
+    ContainerDb(subscriberDb, "SubscriberDatabase", "PostgreSQL", "Stores subscriber information.")
+    ContainerQueue(subscriberQueue, "SubscriberQueue", "RabbitMQ", "Holds newly registered subscribers.")
+
+    Container(newsletterService, "NewsletterService", "ASP.NET Core REST API", "Composes and sends newsletters to subscribers.")
+}
+
+Rel(publisher, webapp, "Writes and publishes articles using")
+Rel(reader, website, "Reads articles, comments and subscribes using")
+
+Rel(webapp, draftService, "Saves and fetches drafts", "HTTP/JSON")
+Rel(draftService, draftDb, "Stores and retrieves drafts")
+
+Rel(webapp, publisherService, "Publishes an article", "HTTP/JSON")
+Rel(publisherService, profanityService, "Filters profanity in article", "HTTP/JSON")
+Rel(publisherService, articleQueue, "Places approved article in")
+
+Rel(profanityService, profanityDb, "Retrieves and removes prohibited words")
+
+Rel(articleService, articleQueue, "Subscribes to new articles from")
+Rel(articleService, articleDb, "Stores and fetches articles")
+
+Rel(website, articleService, "Fetches articles", "HTTP/JSON")
+Rel(website, commentService, "Posts and fetches comments", "HTTP/JSON")
+Rel(website, subscriberService, "Sends subscription requests", "HTTP/JSON")
+
+Rel(commentService, profanityService, "Filters profanity in comment", "HTTP/JSON")
+Rel(commentService, commentDb, "Stores and fetches comments")
+
+Rel(subscriberService, subscriberDb, "Stores subscriber information")
+Rel(subscriberService, subscriberQueue, "Places new subscribers in")
+
+Rel(newsletterService, subscriberQueue, "Consumes new subscribers from")
+Rel(newsletterService, articleQueue, "Subscribes to latest news for immediate newsletter")
+Rel(newsletterService, articleService, "Requests articles for daily newsletter", "HTTP/JSON")
+Rel(newsletterService, subscriberService, "Fetches subscriber information", "HTTP/JSON")
+Rel(newsletterService, reader, "Sends newsletter to", "Email")
+
+SHOW_LEGEND()
+@enduml

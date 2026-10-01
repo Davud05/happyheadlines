@@ -1,0 +1,16 @@
+@startuml context
+!include <C4/C4_Context>
+
+title Happy Headlines - System Context (C4 level 1)
+
+Person(publisher, "Publisher", "Journalist who writes, reviews and publishes positive news articles.")
+Person(reader, "Reader", "Reads articles, comments on them and subscribes to the daily newsletter.")
+
+System(happyHeadlines, "Happy Headlines", "Positive news platform for drafting, publishing, reading and commenting on articles, plus a personalised daily newsletter.")
+
+Rel(publisher, happyHeadlines, "Writes drafts and publishes articles using")
+Rel(reader, happyHeadlines, "Reads articles, posts comments and subscribes to the newsletter using")
+Rel(happyHeadlines, reader, "Sends the daily newsletter to")
+
+SHOW_LEGEND()
+@enduml
