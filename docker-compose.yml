@@ -103,6 +103,20 @@ services:
 
   profanity-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: profanity }, networks: [profanity-lane], volumes: [profanity:/var/lib/postgresql/data] }
 
+  # ---------------------------------------------------------------- DraftService swimlane
+  draft-service:
+    build: { context: ., args: { SERVICE: DraftService } }
+    environment:
+      <<: *dotnet-env
+      ConnectionStrings__Drafts: Host=draft-db;Database=drafts;Username=hh;Password=hh
+    ports: ["8003:8080"]
+    networks: [backbone, draft-lane]
+    depends_on:
+      draft-db: { condition: service_healthy }
+    restart: unless-stopped
+
+  draft-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: drafts }, networks: [draft-lane], volumes: [drafts:/var/lib/postgresql/data] }
+
   # ---------------------------------------------------------------- Observability
   seq:
     image: datalust/seq:latest
@@ -134,8 +148,10 @@ networks:
   article-lane:
   comment-lane:
   profanity-lane:
+  draft-lane:
 
 volumes:
+  drafts:
   comments:
   profanity:
   article-africa:
