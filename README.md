@@ -22,3 +22,4 @@ docker compose up -d --build
 
 - [C4 context diagram](docs/c4/context.png)
 - [C4 container diagram](docs/c4/container.png)
+- [ER diagram](docs/er/er-diagram.png)

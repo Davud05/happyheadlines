@@ -1,0 +1,80 @@
+@startuml er-diagram
+hide circle
+skinparam linetype ortho
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam ranksep 90
+skinparam class {
+    BackgroundColor White
+    BorderColor #444444
+    HeaderBackgroundColor #E8F0FB
+}
+
+title Happy Headlines - ER diagram (week 1-4)
+
+package "ArticleDatabase x8\n(Africa, Antarctica, Asia, Europe, NorthAmerica,\nOceania, SouthAmerica, Global)" as articleDb {
+    entity "Articles" as articles {
+        * Id : uuid <<PK>>
+        --
+        * Title : varchar(300)
+        * Content : text
+        * Author : varchar(200)
+        * Continent : varchar(50)
+        * PublishedAt : timestamptz <<index>>
+          UpdatedAt : timestamptz
+    }
+}
+
+package "CommentDatabase" as commentDb {
+    entity "Comments" as comments {
+        * Id : uuid <<PK>>
+        --
+        * ArticleId : uuid <<index>>
+        * Author : varchar(200)
+        * Content : varchar(4000)
+        * Status : varchar(30) <<index>>
+        * CreatedAt : timestamptz
+    }
+}
+
+package "ProfanityDatabase" as profanityDb {
+    entity "Words" as words {
+        * Id : integer <<PK>>
+        --
+        * Value : varchar(100) <<unique>>
+    }
+}
+
+package "DraftDatabase" as draftDb {
+    entity "Drafts" as drafts {
+        * Id : uuid <<PK>>
+        --
+        * Title : varchar(300)
+        * Content : text
+        * Author : varchar(200) <<index>>
+        * Continent : varchar(50)
+        * CreatedAt : timestamptz
+        * UpdatedAt : timestamptz
+    }
+}
+
+articles ||..o{ comments : "ArticleId"
+
+note bottom of comments
+  Status: Approved | PendingModeration
+  Only Approved comments are shown.
+end note
+
+note bottom of words
+  Prohibited words used to filter
+  comments. Not related to other tables.
+end note
+
+legend right
+  * = required (NOT NULL)
+  Solid boxes = separate databases (swimlanes).
+  Dashed line = one article has 0..* comments.
+  It crosses databases, so it is a logical
+  reference, not a foreign key.
+endlegend
+@enduml
