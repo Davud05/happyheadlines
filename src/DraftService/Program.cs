@@ -16,7 +16,13 @@ app.UseObservability();
 await StartupRetry.RunAsync(async () =>
 {
     await using var scope = app.Services.CreateAsyncScope();
-    await scope.ServiceProvider.GetRequiredService<DraftDbContext>().Database.EnsureCreatedAsync();
+    var db = scope.ServiceProvider.GetRequiredService<DraftDbContext>();
+    await db.Database.EnsureCreatedAsync();
+    if (!await db.Drafts.AnyAsync())
+    {
+        db.Drafts.AddRange(SeedDrafts.Create());
+        await db.SaveChangesAsync();
+    }
 }, app.Logger, "Creating draft schema");
 
 var tracer = new ActivitySource("DraftService");

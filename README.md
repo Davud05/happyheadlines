@@ -6,10 +6,14 @@ Start everything with:
 docker compose up -d --build
 ```
 
+On first start (empty databases) the services insert example articles for every continent, comments and drafts.
+To start over from scratch: `docker compose down -v` and then `docker compose up -d --build`.
+
 ## Services
 
 - ArticleService (load balancer): http://localhost:8000/api/articles
-- CommentService: http://localhost:8001/api/comments?articleId={id}
+- ArticleService, one continent: http://localhost:8000/api/articles?continent=Europe
+- CommentService: http://localhost:8001/api/comments?articleId=a0000000-0000-0000-0000-000008000001
 - ProfanityService: http://localhost:8002/api/profanity/words
 - DraftService: http://localhost:8003/api/drafts
 

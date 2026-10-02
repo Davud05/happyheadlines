@@ -32,6 +32,18 @@ public sealed class ArticleDatabases
             {
                 await using var db = Open(continent);
                 await db.Database.EnsureCreatedAsync();
+                if (await db.Articles.AnyAsync()) return;
+
+                db.Articles.AddRange(SeedArticles.For(continent));
+                try
+                {
+                    await db.SaveChangesAsync();
+                    logger.LogInformation("Seeded example articles into {Continent} database", continent);
+                }
+                catch (DbUpdateException)
+                {
+                    // Another ArticleService instance seeded the same fixed ids first.
+                }
             }, logger, $"Creating schema in {continent} database");
         }
     }

@@ -20,7 +20,13 @@ app.UseObservability();
 await StartupRetry.RunAsync(async () =>
 {
     await using var scope = app.Services.CreateAsyncScope();
-    await scope.ServiceProvider.GetRequiredService<CommentDbContext>().Database.EnsureCreatedAsync();
+    var db = scope.ServiceProvider.GetRequiredService<CommentDbContext>();
+    await db.Database.EnsureCreatedAsync();
+    if (!await db.Comments.AnyAsync())
+    {
+        db.Comments.AddRange(SeedComments.Create());
+        await db.SaveChangesAsync();
+    }
 }, app.Logger, "Creating comment schema");
 
 var comments = app.MapGroup("/api/comments");
