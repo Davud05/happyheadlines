@@ -44,6 +44,7 @@ public static class ObservabilityExtensions
                 .AddNpgsql()
                 .AddOtlpExporter(options => options.Endpoint = otlpEndpoint))
             .WithMetrics(metrics => metrics
+                .AddMeter(CacheMetrics.MeterName)
                 .AddAspNetCoreInstrumentation()
                 .AddHttpClientInstrumentation()
                 .AddOtlpExporter(options => options.Endpoint = otlpEndpoint));

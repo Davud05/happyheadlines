@@ -1,14 +1,24 @@
 using System.Text.Json.Serialization;
+using CommentService.Caching;
 using CommentService.Data;
 using CommentService.Profanity;
 using HappyHeadlines.Shared;
 using HappyHeadlines.Shared.Observability;
 using Microsoft.EntityFrameworkCore;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddObservability("CommentService");
 builder.Services.AddDbContext<CommentDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("Comments")));
+builder.Services.AddSingleton<IConnectionMultiplexer>(_ =>
+{
+    var options = ConfigurationOptions.Parse(builder.Configuration.GetConnectionString("CommentCache") ?? "localhost:6379");
+    options.AbortOnConnectFail = false;
+    options.BacklogPolicy = BacklogPolicy.FailFast;
+    return ConnectionMultiplexer.Connect(options);
+});
+builder.Services.AddSingleton<CommentCache>();
 builder.Services.AddProfanityClient(builder.Configuration);
 builder.Services.AddHostedService<PendingCommentModerator>();
 builder.Services.ConfigureHttpJsonOptions(options =>
@@ -31,17 +41,25 @@ await StartupRetry.RunAsync(async () =>
 
 var comments = app.MapGroup("/api/comments");
 
-comments.MapGet("/", async (Guid articleId, CommentDbContext db) =>
-    await db.Comments.AsNoTracking()
+comments.MapGet("/", async (Guid articleId, CommentDbContext db, CommentCache cache, HttpResponse response) =>
+{
+    var cached = await cache.GetAsync(articleId);
+    CacheMetrics.Record(response, "CommentCache", "list", hit: cached is not null);
+    if (cached is not null) return cached;
+
+    var result = await db.Comments.AsNoTracking()
         .Where(c => c.ArticleId == articleId && c.Status == CommentStatus.Approved)
         .OrderBy(c => c.CreatedAt)
-        .ToListAsync());
+        .ToListAsync();
+    await cache.SetAsync(articleId, result);
+    return result;
+});
 
 comments.MapGet("/{id:guid}", async (Guid id, CommentDbContext db) =>
     await db.Comments.FindAsync(id) is { } comment ? Results.Ok(comment) : Results.NotFound());
 
 comments.MapPost("/", async (CommentRequest request, CommentDbContext db, ProfanityClient profanity,
-    ILogger<Program> logger, CancellationToken ct) =>
+    CommentCache cache, ILogger<Program> logger, CancellationToken ct) =>
 {
     if (string.IsNullOrWhiteSpace(request.Author) || string.IsNullOrWhiteSpace(request.Content))
         return Results.BadRequest(new { error = "Author and content are required." });
@@ -70,6 +88,7 @@ comments.MapPost("/", async (CommentRequest request, CommentDbContext db, Profan
 
     db.Comments.Add(comment);
     await db.SaveChangesAsync(ct);
+    if (comment.Status == CommentStatus.Approved) await cache.InvalidateAsync(comment.ArticleId);
     logger.LogInformation("Stored comment {CommentId} on article {ArticleId} as {Status}",
         comment.Id, comment.ArticleId, comment.Status);
 
@@ -78,8 +97,15 @@ comments.MapPost("/", async (CommentRequest request, CommentDbContext db, Profan
         : Results.Accepted($"/api/comments/{comment.Id}", comment);
 });
 
-comments.MapDelete("/{id:guid}", async (Guid id, CommentDbContext db) =>
-    await db.Comments.Where(c => c.Id == id).ExecuteDeleteAsync() > 0 ? Results.NoContent() : Results.NotFound());
+comments.MapDelete("/{id:guid}", async (Guid id, CommentDbContext db, CommentCache cache) =>
+{
+    var articleId = await db.Comments.Where(c => c.Id == id).Select(c => (Guid?)c.ArticleId).FirstOrDefaultAsync();
+    if (articleId is null || await db.Comments.Where(c => c.Id == id).ExecuteDeleteAsync() == 0)
+        return Results.NotFound();
+
+    await cache.InvalidateAsync(articleId.Value);
+    return Results.NoContent();
+});
 
 app.Run();
 
