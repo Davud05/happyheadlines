@@ -15,6 +15,7 @@ x-postgres: &postgres
 x-dotnet-env: &dotnet-env
   Seq__Url: http://seq:5341
   Otlp__Endpoint: http://otel-collector:4317
+  RabbitMq__Host: rabbitmq
 
 x-article-service: &article-service
   image: happyheadlines/article-service
@@ -23,7 +24,8 @@ x-article-service: &article-service
     args: { SERVICE: ArticleService }
   networks: [backbone, article-lane]
   restart: unless-stopped
-  depends_on: &article-dbs
+  depends_on:
+    rabbitmq: { condition: service_healthy }
     article-db-africa: { condition: service_healthy }
     article-db-antarctica: { condition: service_healthy }
     article-db-asia: { condition: service_healthy }
@@ -117,6 +119,62 @@ services:
 
   draft-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: drafts }, networks: [draft-lane], volumes: [drafts:/var/lib/postgresql/data] }
 
+  # ---------------------------------------------------------------- Publishing
+  webapp:
+    build: { context: ., args: { SERVICE: Webapp } }
+    environment:
+      <<: *dotnet-env
+      Services__Drafts: http://draft-service:8080
+      Services__Publisher: http://publisher-service:8080
+    ports: ["5001:8080"]
+    networks: [backbone]
+    restart: unless-stopped
+
+  publisher-service:
+    build: { context: ., args: { SERVICE: PublisherService } }
+    environment:
+      <<: *dotnet-env
+      Services__Profanity: http://profanity-service:8080
+    ports: ["8004:8080"]
+    networks: [backbone]
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4-management-alpine
+    ports: ["15672:15672"]
+    networks: [backbone]
+    volumes: [rabbitmq:/var/lib/rabbitmq]
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------- Newsletter
+  newsletter-service:
+    build: { context: ., args: { SERVICE: NewsletterService } }
+    environment:
+      <<: *dotnet-env
+      Services__Articles: http://article-lb
+      Smtp__Host: mailpit
+      Smtp__Port: "1025"
+      Newsletter__Subscribers__0: anna@example.com
+      Newsletter__Subscribers__1: lars@example.com
+    ports: ["8005:8080"]
+    networks: [backbone]
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+    restart: unless-stopped
+
+  mailpit:
+    image: axllent/mailpit:latest
+    ports: ["8025:8025"]
+    networks: [backbone]
+    restart: unless-stopped
+
   # ---------------------------------------------------------------- Observability
   seq:
     image: datalust/seq:latest
@@ -151,6 +209,7 @@ networks:
   draft-lane:
 
 volumes:
+  rabbitmq:
   drafts:
   comments:
   profanity:

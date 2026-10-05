@@ -3,7 +3,10 @@
     <Project Path="src/ArticleService/ArticleService.csproj" />
     <Project Path="src/CommentService/CommentService.csproj" />
     <Project Path="src/DraftService/DraftService.csproj" />
+    <Project Path="src/NewsletterService/NewsletterService.csproj" />
     <Project Path="src/ProfanityService/ProfanityService.csproj" />
+    <Project Path="src/PublisherService/PublisherService.csproj" />
+    <Project Path="src/Webapp/Webapp.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/HappyHeadlines.Shared/HappyHeadlines.Shared.csproj" />

@@ -1,0 +1,49 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Drafts";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Drafts</h1>
+    <a class="btn btn-primary" asp-page="/Edit">New draft</a>
+</div>
+
+@if (Model.Message is not null)
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+@if (Model.Error is not null)
+{
+    <div class="alert alert-warning">@Model.Error</div>
+}
+
+@if (Model.Drafts.Count == 0 && Model.Error is null)
+{
+    <p class="text-muted">No drafts yet. Start writing something positive!</p>
+}
+else
+{
+    <table class="table align-middle">
+        <thead>
+            <tr><th>Title</th><th>Author</th><th>Region</th><th>Last edited</th><th></th></tr>
+        </thead>
+        <tbody>
+            @foreach (var draft in Model.Drafts)
+            {
+                <tr>
+                    <td><a asp-page="/Edit" asp-route-id="@draft.Id">@draft.Title</a></td>
+                    <td>@draft.Author</td>
+                    <td>@draft.Continent</td>
+                    <td>@draft.UpdatedAt.ToLocalTime().ToString("g")</td>
+                    <td class="text-end">
+                        <form method="post" class="d-inline">
+                            <button class="btn btn-sm btn-success" asp-page-handler="Publish" asp-route-id="@draft.Id">Publish</button>
+                            <button class="btn btn-sm btn-outline-danger" asp-page-handler="Delete" asp-route-id="@draft.Id">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

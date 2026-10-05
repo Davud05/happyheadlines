@@ -1,11 +1,15 @@
 using ArticleService.Data;
+using ArticleService.Messaging;
 using HappyHeadlines.Shared.Contracts;
+using HappyHeadlines.Shared.Messaging;
 using HappyHeadlines.Shared.Observability;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.AddObservability("ArticleService");
 builder.Services.AddSingleton<ArticleDatabases>();
+builder.Services.AddMessaging();
+builder.Services.AddHostedService<ArticleQueueConsumer>();
 
 var app = builder.Build();
 app.UseObservability();

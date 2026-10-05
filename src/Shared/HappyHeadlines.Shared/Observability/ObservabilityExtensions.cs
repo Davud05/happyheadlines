@@ -39,6 +39,7 @@ public static class ObservabilityExtensions
             .ConfigureResource(resource => resource.AddService(serviceName, serviceInstanceId: instanceId))
             .WithTracing(tracing => tracing
                 .AddSource(serviceName)
+                .AddSource(Telemetry.MessagingSourceName)
                 .AddAspNetCoreInstrumentation(options => options.Filter = ctx => !IsInfrastructurePath(ctx))
                 .AddHttpClientInstrumentation()
                 .AddNpgsql()

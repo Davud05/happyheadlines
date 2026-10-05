@@ -16,6 +16,14 @@ To start over from scratch: `docker compose down -v` and then `docker compose up
 - CommentService: http://localhost:8001/api/comments?articleId=a0000000-0000-0000-0000-000008000001
 - ProfanityService: http://localhost:8002/api/profanity/words
 - DraftService: http://localhost:8003/api/drafts
+- Webapp (write and publish articles): http://localhost:5001
+- PublisherService: `POST` http://localhost:8004/api/publish
+- NewsletterService (send daily newsletter now): `POST` http://localhost:8005/api/newsletter/daily
+
+## Messaging
+
+- RabbitMQ (ArticleQueue), login guest/guest: http://localhost:15672
+- Mailpit (sent newsletters): http://localhost:8025
 
 ## Monitoring
 
