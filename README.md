@@ -25,10 +25,19 @@ To start over from scratch: `docker compose down -v` and then `docker compose up
 - RabbitMQ (ArticleQueue), login guest/guest: http://localhost:15672
 - Mailpit (sent newsletters): http://localhost:8025
 
+## Caching
+
+- ArticleCache (Redis, `article-cache`): offline cache with all articles from the last 14 days, loaded by ArticleService on startup and every 5 minutes.
+- CommentCache (Redis, `comment-cache`): filled on cache miss, capped at 64 MB and cleaned with LRU.
+
+Responses from both services carry an `X-Cache: HIT` or `X-Cache: MISS` header. If a cache is down, the service falls back to its database.
+
 ## Monitoring
 
 - Seq (logs): http://localhost:5380
 - Jaeger (traces): http://localhost:16686
+- Grafana (cache hit ratio dashboard): http://localhost:3000
+- Prometheus (metrics): http://localhost:9090
 
 ## Docs
 

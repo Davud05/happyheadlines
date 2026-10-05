@@ -22,9 +22,11 @@ System_Boundary(hh, "Happy Headlines") {
     ContainerQueue(articleQueue, "ArticleQueue", "RabbitMQ", "Holds newly published articles.")
     Container(articleService, "ArticleService", "ASP.NET Core REST API", "Delivers published articles to the subsystems that request them.")
     ContainerDb(articleDb, "ArticleDatabase", "PostgreSQL", "Stores all published articles.")
+    ContainerDb(articleCache, "ArticleCache", "Redis", "Offline cache containing articles from the latest 14 days.")
 
     Container(commentService, "CommentService", "ASP.NET Core REST API", "Handles comments on articles.")
     ContainerDb(commentDb, "CommentDatabase", "PostgreSQL", "Stores all comments posted on articles.")
+    ContainerDb(commentCache, "CommentCache", "Redis", "Recent comments filled on cache miss, cleaned with an LRU algorithm.")
 
     Container(subscriberService, "SubscriberService", "ASP.NET Core REST API", "Handles newsletter subscriptions.")
     ContainerDb(subscriberDb, "SubscriberDatabase", "PostgreSQL", "Stores subscriber information.")
@@ -47,6 +49,7 @@ Rel(profanityService, profanityDb, "Retrieves and removes prohibited words")
 
 Rel(articleService, articleQueue, "Subscribes to new articles from")
 Rel(articleService, articleDb, "Stores and fetches articles")
+Rel(articleService, articleCache, "Finds articles in the cache before contacting the database")
 
 Rel(website, articleService, "Fetches articles", "HTTP/JSON")
 Rel(website, commentService, "Posts and fetches comments", "HTTP/JSON")
@@ -54,6 +57,7 @@ Rel(website, subscriberService, "Sends subscription requests", "HTTP/JSON")
 
 Rel(commentService, profanityService, "Filters profanity in comment", "HTTP/JSON")
 Rel(commentService, commentDb, "Stores and fetches comments")
+Rel(commentService, commentCache, "Finds comments in the cache before contacting the database")
 
 Rel(subscriberService, subscriberDb, "Stores subscriber information")
 Rel(subscriberService, subscriberQueue, "Places new subscribers in")
