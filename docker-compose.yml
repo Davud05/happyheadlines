@@ -152,10 +152,8 @@ services:
       <<: *dotnet-env
       Services__Drafts: http://draft-service:8080
       Services__Publisher: http://publisher-service:8080
-      DataProtection__KeysPath: /keys
     ports: ["5001:8080"]
     networks: [backbone]
-    volumes: [webapp-keys:/keys]
     restart: unless-stopped
 
   publisher-service:
@@ -260,7 +258,6 @@ networks:
   draft-lane:
 
 volumes:
-  webapp-keys:
   rabbitmq:
   drafts:
   comments:
