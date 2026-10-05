@@ -1,3 +1,4 @@
+using ArticleService.Caching;
 using ArticleService.Data;
 using HappyHeadlines.Shared.Contracts;
 using HappyHeadlines.Shared.Messaging;
@@ -13,6 +14,7 @@ public sealed class ArticleQueueConsumer(
     RabbitMqConnection connection,
     IServiceScopeFactory scopeFactory,
     ArticleDatabases databases,
+    ArticleCache cache,
     ILogger<ArticleQueueConsumer> logger)
     : MessageConsumer<ArticlePublished>(connection, scopeFactory, logger, Exchanges.Articles, "article-service.articles")
 {
@@ -27,7 +29,7 @@ public sealed class ArticleQueueConsumer(
             return;
         }
 
-        db.Articles.Add(new Article
+        var article = new Article
         {
             Id = message.Id,
             Title = message.Title,
@@ -35,8 +37,10 @@ public sealed class ArticleQueueConsumer(
             Author = message.Author,
             Continent = continent,
             PublishedAt = message.PublishedAt.ToUniversalTime(),
-        });
+        };
+        db.Articles.Add(article);
         await db.SaveChangesAsync(ct);
+        await cache.SetAsync(article);
 
         logger.LogInformation("Stored published article {ArticleId} in {Continent}", message.Id, continent);
     }
