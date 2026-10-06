@@ -1,0 +1,50 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Good news";
+    string Excerpt(string text) => text.Length > 160 ? text[..160] + "…" : text;
+}
+
+<form method="get" class="d-flex justify-content-end align-items-center gap-2 mb-4">
+    <label for="region" class="text-muted">Your region</label>
+    <select id="region" name="region" class="form-select w-auto" onchange="this.form.submit()"
+            asp-items="@(new SelectList(Model.AllContinents, Model.Region))"></select>
+</form>
+
+@if (Model.Error is not null)
+{
+    <div class="alert alert-warning">@Model.Error</div>
+}
+else if (Model.Focus is null)
+{
+    <p class="text-muted">No news yet. Good things take time!</p>
+}
+else
+{
+    <article class="p-4 mb-4 rounded-3 bg-warning-subtle">
+        <span class="badge text-bg-warning mb-2">@Model.Focus.Continent</span>
+        <h1 class="display-6">
+            <a class="text-reset text-decoration-none" asp-page="/Article" asp-route-continent="@Model.Focus.Continent" asp-route-id="@Model.Focus.Id">@Model.Focus.Title</a>
+        </h1>
+        <p class="lead">@Excerpt(Model.Focus.Content)</p>
+        <small class="text-muted">by @Model.Focus.Author · @Model.Focus.PublishedAt.ToLocalTime().ToString("g")</small>
+    </article>
+
+    <div class="row row-cols-1 row-cols-md-3 g-3">
+        @foreach (var article in Model.Others)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <span class="badge text-bg-light mb-2">@article.Continent</span>
+                        <h5 class="card-title">
+                            <a class="stretched-link text-reset text-decoration-none" asp-page="/Article" asp-route-continent="@article.Continent" asp-route-id="@article.Id">@article.Title</a>
+                        </h5>
+                        <p class="card-text">@Excerpt(article.Content)</p>
+                    </div>
+                    <div class="card-footer text-muted small">by @article.Author · @article.PublishedAt.ToLocalTime().ToString("g")</div>
+                </div>
+            </div>
+        }
+    </div>
+}

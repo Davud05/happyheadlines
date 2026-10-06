@@ -145,6 +145,17 @@ services:
 
   draft-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: drafts }, networks: [draft-lane], volumes: [drafts:/var/lib/postgresql/data] }
 
+  # ---------------------------------------------------------------- Readers
+  website:
+    build: { context: ., args: { SERVICE: Website } }
+    environment:
+      <<: *dotnet-env
+      Services__Articles: http://article-lb
+      Services__Comments: http://comment-service:8080
+    ports: ["5000:8080"]
+    networks: [backbone]
+    restart: unless-stopped
+
   # ---------------------------------------------------------------- Publishing
   webapp:
     build: { context: ., args: { SERVICE: Webapp } }

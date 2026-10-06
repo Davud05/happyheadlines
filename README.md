@@ -11,6 +11,8 @@ To start over from scratch: `docker compose down -v` and then `docker compose up
 
 ## Services
 
+- Website (read articles and comment): http://localhost:5000
+
 - ArticleService (load balancer): http://localhost:8000/api/articles
 - ArticleService, one continent: http://localhost:8000/api/articles?continent=Europe
 - CommentService: http://localhost:8001/api/comments?articleId=a0000000-0000-0000-0000-000008000001

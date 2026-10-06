@@ -1,0 +1,55 @@
+@page "{continent}/{id:guid}"
+@model ArticleModel
+@{
+    ViewData["Title"] = Model.Article!.Title;
+}
+
+<article class="mb-5" style="max-width: 48rem">
+    <span class="badge text-bg-warning mb-2">@Model.Article.Continent</span>
+    <h1>@Model.Article.Title</h1>
+    <p class="text-muted">by @Model.Article.Author · @Model.Article.PublishedAt.ToLocalTime().ToString("f")</p>
+    <div style="white-space: pre-line">@Model.Article.Content</div>
+</article>
+
+<section style="max-width: 48rem">
+    <h2 class="h4">Comments</h2>
+
+    @if (Model.Message is not null)
+    {
+        <div class="alert alert-info">@Model.Message</div>
+    }
+
+    @if (Model.CommentsError is not null)
+    {
+        <div class="alert alert-warning">@Model.CommentsError</div>
+    }
+    else if (Model.Comments.Count == 0)
+    {
+        <p class="text-muted">Be the first to share something nice.</p>
+    }
+    else
+    {
+        <ul class="list-unstyled">
+            @foreach (var comment in Model.Comments)
+            {
+                <li class="border-bottom py-2">
+                    <strong>@comment.Author</strong>
+                    <small class="text-muted">@comment.CreatedAt.ToLocalTime().ToString("g")</small>
+                    <div>@comment.Content</div>
+                </li>
+            }
+        </ul>
+    }
+
+    <form method="post" class="mt-4">
+        <div class="mb-2">
+            <input asp-for="Author" class="form-control" placeholder="Your name" />
+            <span asp-validation-for="Author" class="text-danger"></span>
+        </div>
+        <div class="mb-2">
+            <textarea asp-for="Content" rows="3" class="form-control" placeholder="Write a comment"></textarea>
+            <span asp-validation-for="Content" class="text-danger"></span>
+        </div>
+        <button class="btn btn-primary">Post comment</button>
+    </form>
+</section>
