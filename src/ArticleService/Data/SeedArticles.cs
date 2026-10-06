@@ -54,19 +54,29 @@ public static class SeedArticles
         ],
     };
 
+    /// <summary>Older than the 14-day ArticleCache window, so it is never cached and always read from the database.</summary>
+    private static readonly (string Continent, string Title, string Content, string Author, int DaysAgo) Archived =
+        ("Europe", "Copenhagen harbour declared clean enough to swim in",
+            "Years of sewage upgrades have made the water in Copenhagen's harbour so clean that locals now swim there every summer.",
+            "Mette Hansen", 30);
+
     public static IEnumerable<Article> For(string continent)
     {
         var continentNumber = Continents.All.ToList().IndexOf(continent) + 1;
         var now = DateTimeOffset.UtcNow;
 
-        return Stories[continent].Select((story, i) => new Article
+        var stories = Stories[continent].Select(story => (story.Title, story.Content, story.Author, Age: TimeSpan.Zero)).ToList();
+        if (continent == Archived.Continent)
+            stories.Add((Archived.Title, Archived.Content, Archived.Author, TimeSpan.FromDays(Archived.DaysAgo)));
+
+        return stories.Select((story, i) => new Article
         {
             Id = Guid.Parse($"a0000000-0000-0000-0000-{continentNumber:D6}{i + 1:D6}"),
             Title = story.Title,
             Content = story.Content,
             Author = story.Author,
             Continent = continent,
-            PublishedAt = now.AddHours(-(i * 5 + continentNumber)),
+            PublishedAt = now.AddHours(-(i * 5 + continentNumber)) - story.Age,
         });
     }
 }
