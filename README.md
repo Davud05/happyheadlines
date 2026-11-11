@@ -9,6 +9,25 @@ docker compose up -d --build
 On first start (empty databases) the services insert example articles for every continent, comments and drafts.
 To start over from scratch: `docker compose down -v` and then `docker compose up -d --build`.
 
+## CI/CD
+
+Every push to `main` runs [`.github/workflows/ci-cd.yml`](.github/workflows/ci-cd.yml):
+
+1. **build-and-test**: builds the solution and runs `tests/HappyHeadlines.Tests`. If anything fails, nothing is delivered.
+2. **images**: builds one image per service and pushes it to GitHub Container Registry as `ghcr.io/davud05/happyheadlines-<service>`, tagged `1.0.<run number>`, `sha-<commit>` and `latest`.
+
+Pull requests against `main` run the same steps but never push images.
+
+Run a delivered version instead of building locally (rolling back is the same command with an older version):
+
+```powershell
+$env:TAG = "1.0.12"
+docker compose pull
+docker compose up -d --no-build
+```
+
+Run the tests locally with `dotnet test HappyHeadlines.slnx`.
+
 ## Services
 
 - Website (read articles and comment): http://localhost:5000

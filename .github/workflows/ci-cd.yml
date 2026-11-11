@@ -1,0 +1,100 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-cd-${{ github.ref }}
+  # Never cancel a delivery on main halfway through; superseded pull request runs can go.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  VERSION: 1.0.${{ github.run_number }}
+
+jobs:
+  # Barrier: no image is built or delivered unless the whole solution compiles and every test passes.
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+
+      - run: dotnet restore HappyHeadlines.slnx
+      - run: dotnet build HappyHeadlines.slnx --no-restore -c Release
+      - run: dotnet test HappyHeadlines.slnx --no-build -c Release --logger trx --results-directory TestResults
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: TestResults
+
+  images:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { project: ArticleService, image: article-service }
+          - { project: CommentService, image: comment-service }
+          - { project: ProfanityService, image: profanity-service }
+          - { project: DraftService, image: draft-service }
+          - { project: PublisherService, image: publisher-service }
+          - { project: NewsletterService, image: newsletter-service }
+          - { project: Webapp, image: webapp }
+          - { project: Website, image: website }
+    steps:
+      - uses: actions/checkout@v5
+
+      # GitHub Container Registry only accepts lowercase image names.
+      - id: owner
+        run: echo "name=${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_OUTPUT"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ steps.owner.outputs.name }}/happyheadlines-${{ matrix.image }}
+          tags: |
+            type=raw,value=${{ env.VERSION }}
+            type=sha
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          build-args: SERVICE=${{ matrix.project }}
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+      - if: github.event_name != 'pull_request'
+        run: |
+          echo "### ${{ matrix.image }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"
+          echo "${{ steps.meta.outputs.tags }}" >> "$GITHUB_STEP_SUMMARY"
+          echo '```' >> "$GITHUB_STEP_SUMMARY"

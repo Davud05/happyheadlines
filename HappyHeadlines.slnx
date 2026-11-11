@@ -12,4 +12,7 @@
   <Folder Name="/src/Shared/">
     <Project Path="src/Shared/HappyHeadlines.Shared/HappyHeadlines.Shared.csproj" />
   </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/HappyHeadlines.Tests/HappyHeadlines.Tests.csproj" />
+  </Folder>
 </Solution>

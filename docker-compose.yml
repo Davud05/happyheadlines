@@ -28,7 +28,7 @@ x-dotnet-env: &dotnet-env
   OTEL_METRIC_EXPORT_INTERVAL: "5000"
 
 x-article-service: &article-service
-  image: happyheadlines/article-service
+  image: ghcr.io/davud05/happyheadlines-article-service:${TAG:-latest}
   build:
     context: .
     args: { SERVICE: ArticleService }
@@ -96,6 +96,7 @@ services:
 
   # ---------------------------------------------------------------- CommentService swimlane
   comment-service:
+    image: ghcr.io/davud05/happyheadlines-comment-service:${TAG:-latest}
     build: { context: ., args: { SERVICE: CommentService } }
     environment:
       <<: *dotnet-env
@@ -119,6 +120,7 @@ services:
 
   # ---------------------------------------------------------------- ProfanityService swimlane
   profanity-service:
+    image: ghcr.io/davud05/happyheadlines-profanity-service:${TAG:-latest}
     build: { context: ., args: { SERVICE: ProfanityService } }
     environment:
       <<: *dotnet-env
@@ -133,6 +135,7 @@ services:
 
   # ---------------------------------------------------------------- DraftService swimlane
   draft-service:
+    image: ghcr.io/davud05/happyheadlines-draft-service:${TAG:-latest}
     build: { context: ., args: { SERVICE: DraftService } }
     environment:
       <<: *dotnet-env
@@ -147,6 +150,7 @@ services:
 
   # ---------------------------------------------------------------- Readers
   website:
+    image: ghcr.io/davud05/happyheadlines-website:${TAG:-latest}
     build: { context: ., args: { SERVICE: Website } }
     environment:
       <<: *dotnet-env
@@ -158,6 +162,7 @@ services:
 
   # ---------------------------------------------------------------- Publishing
   webapp:
+    image: ghcr.io/davud05/happyheadlines-webapp:${TAG:-latest}
     build: { context: ., args: { SERVICE: Webapp } }
     environment:
       <<: *dotnet-env
@@ -168,6 +173,7 @@ services:
     restart: unless-stopped
 
   publisher-service:
+    image: ghcr.io/davud05/happyheadlines-publisher-service:${TAG:-latest}
     build: { context: ., args: { SERVICE: PublisherService } }
     environment:
       <<: *dotnet-env
@@ -192,6 +198,7 @@ services:
 
   # ---------------------------------------------------------------- Newsletter
   newsletter-service:
+    image: ghcr.io/davud05/happyheadlines-newsletter-service:${TAG:-latest}
     build: { context: ., args: { SERVICE: NewsletterService } }
     environment:
       <<: *dotnet-env
