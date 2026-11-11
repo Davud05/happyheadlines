@@ -27,6 +27,12 @@ x-dotnet-env: &dotnet-env
   RabbitMq__Host: rabbitmq
   OTEL_METRIC_EXPORT_INTERVAL: "5000"
 
+# Release toggles. The API key is created once in the FeatureHub admin console and stored in .env (see README).
+# Without it every toggle is off and the services run as before.
+x-featurehub-env: &featurehub-env
+  FeatureHub__EdgeUrl: http://featurehub:8085
+  FeatureHub__ApiKey: ${FEATUREHUB_API_KEY:-}
+
 x-article-service: &article-service
   image: ghcr.io/davud05/happyheadlines-article-service:${TAG:-latest}
   build:
@@ -153,9 +159,10 @@ services:
     image: ghcr.io/davud05/happyheadlines-website:${TAG:-latest}
     build: { context: ., args: { SERVICE: Website } }
     environment:
-      <<: *dotnet-env
+      <<: [*dotnet-env, *featurehub-env]
       Services__Articles: http://article-lb
       Services__Comments: http://comment-service:8080
+      Services__Subscribers: http://subscriber-service:8080
     ports: ["5000:8080"]
     networks: [backbone]
     restart: unless-stopped
@@ -196,28 +203,68 @@ services:
       retries: 30
     restart: unless-stopped
 
-  # ---------------------------------------------------------------- Newsletter
+  # ---------------------------------------------------------------- SubscriberService swimlane
+  # Behind the SUBSCRIBER_SERVICE release toggle. Only talks to NewsletterService through SubscriberQueue.
+  subscriber-service:
+    image: ghcr.io/davud05/happyheadlines-subscriber-service:${TAG:-latest}
+    build: { context: ., args: { SERVICE: SubscriberService } }
+    environment:
+      <<: [*dotnet-env, *featurehub-env]
+      ConnectionStrings__Subscribers: Host=subscriber-db;Database=subscribers;Username=hh;Password=hh
+    ports: ["8006:8080"]
+    networks: [backbone, subscriber-lane]
+    depends_on:
+      rabbitmq: { condition: service_healthy }
+      subscriber-db: { condition: service_healthy }
+    restart: unless-stopped
+
+  subscriber-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: subscribers }, networks: [subscriber-lane], volumes: [subscribers:/var/lib/postgresql/data] }
+
+  # ---------------------------------------------------------------- NewsletterService swimlane
+  # Keeps its own copy of the subscribers (newsletter-db), so it never calls SubscriberService.
   newsletter-service:
     image: ghcr.io/davud05/happyheadlines-newsletter-service:${TAG:-latest}
     build: { context: ., args: { SERVICE: NewsletterService } }
     environment:
-      <<: *dotnet-env
+      <<: [*dotnet-env, *featurehub-env]
+      ConnectionStrings__Newsletter: Host=newsletter-db;Database=newsletter;Username=hh;Password=hh
       Services__Articles: http://article-lb
       Smtp__Host: mailpit
       Smtp__Port: "1025"
+      # Legacy recipients, used while the SUBSCRIBER_SERVICE toggle is off.
       Newsletter__Subscribers__0: anna@example.com
       Newsletter__Subscribers__1: lars@example.com
     ports: ["8005:8080"]
-    networks: [backbone]
+    networks: [backbone, newsletter-lane]
     depends_on:
       rabbitmq: { condition: service_healthy }
+      newsletter-db: { condition: service_healthy }
     restart: unless-stopped
+
+  newsletter-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: newsletter }, networks: [newsletter-lane], volumes: [newsletter:/var/lib/postgresql/data] }
 
   mailpit:
     image: axllent/mailpit:latest
     ports: ["8025:8025"]
     networks: [backbone]
     restart: unless-stopped
+
+  # ---------------------------------------------------------------- Feature toggles
+  # FeatureHub Party Server: admin console and the Edge API the SDKs stream toggles from, both on port 8085.
+  # No service depends_on it: if FeatureHub is down, services keep their last known toggle values (off at startup).
+  featurehub:
+    image: featurehub/party-server:1.10.1
+    environment:
+      db.url: jdbc:postgresql://featurehub-db:5432/featurehub
+      db.username: hh
+      db.password: hh
+    ports: ["8085:8085"]
+    networks: [backbone, featurehub-lane]
+    depends_on:
+      featurehub-db: { condition: service_healthy }
+    restart: unless-stopped
+
+  featurehub-db: { <<: *postgres, environment: { <<: *postgres-env, POSTGRES_DB: featurehub }, networks: [featurehub-lane], volumes: [featurehub:/var/lib/postgresql/data] }
 
   # ---------------------------------------------------------------- Observability
   seq:
@@ -274,12 +321,18 @@ networks:
   comment-lane:
   profanity-lane:
   draft-lane:
+  subscriber-lane:
+  newsletter-lane:
+  featurehub-lane:
 
 volumes:
   rabbitmq:
   drafts:
   comments:
   profanity:
+  subscribers:
+  newsletter:
+  featurehub:
   article-africa:
   article-antarctica:
   article-asia:

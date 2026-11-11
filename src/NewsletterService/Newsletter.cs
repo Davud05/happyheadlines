@@ -6,15 +6,13 @@ namespace NewsletterService;
 public sealed class Newsletter(
     ArticleClient articles,
     EmailSender email,
-    IConfiguration configuration,
+    SubscriberDirectory subscribers,
     ILogger<Newsletter> logger)
 {
-    private string[] Subscribers => configuration.GetSection("Newsletter:Subscribers").Get<string[]>() ?? [];
-
     /// <summary>Immediate newsletter sent as soon as an article is published.</summary>
     public async Task SendBreakingNewsAsync(ArticlePublished article, CancellationToken ct)
     {
-        var recipients = Subscribers;
+        var recipients = await subscribers.GetRecipientsAsync(ct);
         var body = $"<h1>Just published</h1>{RenderArticle(article.Title, article.Content, article.Author)}";
 
         foreach (var recipient in recipients)
@@ -28,7 +26,6 @@ public sealed class Newsletter(
     public async Task SendDailyAsync(CancellationToken ct)
     {
         var digest = await articles.GetSinceAsync(Continents.Global, DateTimeOffset.UtcNow.AddDays(-1), ct);
-        var recipients = Subscribers;
         if (digest.Count == 0)
         {
             logger.LogInformation("Daily newsletter skipped, no articles from the last 24 hours");
@@ -37,6 +34,7 @@ public sealed class Newsletter(
 
         var body = "<h1>Your daily Happy Headlines</h1>"
             + string.Concat(digest.Select(a => RenderArticle(a.Title, a.Content, a.Author)));
+        var recipients = await subscribers.GetRecipientsAsync(ct);
 
         foreach (var recipient in recipients)
             await email.SendAsync(recipient, "Your daily dose of good news", body, ct);

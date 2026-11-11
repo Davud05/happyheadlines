@@ -44,7 +44,10 @@ public sealed class MessagePublisher(RabbitMqConnection connection) : IAsyncDisp
             if (_channel is not { IsOpen: true })
             {
                 var conn = await connection.GetAsync(ct);
-                _channel = await conn.CreateChannelAsync(cancellationToken: ct);
+                // With confirmation tracking, BasicPublishAsync only returns once the broker has the message.
+                _channel = await conn.CreateChannelAsync(
+                    new CreateChannelOptions(publisherConfirmationsEnabled: true, publisherConfirmationTrackingEnabled: true),
+                    ct);
                 _declared.Clear();
             }
 

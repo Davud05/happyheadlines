@@ -28,11 +28,15 @@ System_Boundary(hh, "Happy Headlines") {
     ContainerDb(commentDb, "CommentDatabase", "PostgreSQL", "Stores all comments posted on articles.")
     ContainerDb(commentCache, "CommentCache", "Redis", "Recent comments filled on cache miss, cleaned with an LRU algorithm.")
 
-    Container(subscriberService, "SubscriberService", "ASP.NET Core REST API", "Handles newsletter subscriptions.")
+    Container(subscriberService, "SubscriberService", "ASP.NET Core REST API", "Handles newsletter subscriptions. Hidden behind the SUBSCRIBER_SERVICE release toggle.")
     ContainerDb(subscriberDb, "SubscriberDatabase", "PostgreSQL", "Stores subscriber information.")
-    ContainerQueue(subscriberQueue, "SubscriberQueue", "RabbitMQ", "Holds newly registered subscribers.")
+    ContainerQueue(subscriberQueue, "SubscriberQueue", "RabbitMQ", "Holds subscribe and unsubscribe events.")
 
     Container(newsletterService, "NewsletterService", "ASP.NET Core REST API", "Composes and sends newsletters to subscribers.")
+    ContainerDb(newsletterDb, "NewsletterDatabase", "PostgreSQL", "NewsletterService's own copy of the subscribers, built from SubscriberQueue.")
+
+    Container(featureHub, "FeatureHub", "FeatureHub Party Server", "Release toggles, streamed to the services and changed at runtime.")
+    ContainerDb(featureHubDb, "FeatureHubDatabase", "PostgreSQL", "Stores feature toggles and their values.")
 }
 
 Rel(publisher, webapp, "Writes and publishes articles using")
@@ -60,13 +64,18 @@ Rel(commentService, commentDb, "Stores and fetches comments")
 Rel(commentService, commentCache, "Finds comments in the cache before contacting the database")
 
 Rel(subscriberService, subscriberDb, "Stores subscriber information")
-Rel(subscriberService, subscriberQueue, "Places new subscribers in")
+Rel(subscriberService, subscriberQueue, "Places subscribe and unsubscribe events in")
 
-Rel(newsletterService, subscriberQueue, "Consumes new subscribers from")
+Rel(newsletterService, subscriberQueue, "Consumes subscriber events from")
+Rel(newsletterService, newsletterDb, "Stores and reads its copy of the subscribers")
 Rel(newsletterService, articleQueue, "Subscribes to latest news for immediate newsletter")
 Rel(newsletterService, articleService, "Requests articles for daily newsletter", "HTTP/JSON")
-Rel(newsletterService, subscriberService, "Fetches subscriber information", "HTTP/JSON")
 Rel(newsletterService, reader, "Sends newsletter to", "Email")
+
+Rel(subscriberService, featureHub, "Reads release toggle", "SSE")
+Rel(newsletterService, featureHub, "Reads release toggle", "SSE")
+Rel(website, featureHub, "Reads release toggle", "SSE")
+Rel(featureHub, featureHubDb, "Stores toggles")
 
 SHOW_LEGEND()
 @enduml

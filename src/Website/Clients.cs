@@ -39,3 +39,20 @@ public sealed class CommentClient(HttpClient http)
         return response.StatusCode == HttpStatusCode.Created;
     }
 }
+
+public enum SubscribeOutcome { Subscribed, AlreadySubscribed, InvalidEmail, Unavailable }
+
+public sealed class SubscriberClient(HttpClient http)
+{
+    public async Task<SubscribeOutcome> SubscribeAsync(string email, CancellationToken ct)
+    {
+        using var response = await http.PostAsJsonAsync("/api/subscribers", new { email }, ct);
+        return response.StatusCode switch
+        {
+            HttpStatusCode.Created => SubscribeOutcome.Subscribed,
+            HttpStatusCode.Conflict => SubscribeOutcome.AlreadySubscribed,
+            HttpStatusCode.BadRequest => SubscribeOutcome.InvalidEmail,
+            _ => SubscribeOutcome.Unavailable,
+        };
+    }
+}

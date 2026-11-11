@@ -6,6 +6,7 @@
     <Project Path="src/NewsletterService/NewsletterService.csproj" />
     <Project Path="src/ProfanityService/ProfanityService.csproj" />
     <Project Path="src/PublisherService/PublisherService.csproj" />
+    <Project Path="src/SubscriberService/SubscriberService.csproj" />
     <Project Path="src/Webapp/Webapp.csproj" />
     <Project Path="src/Website/Website.csproj" />
   </Folder>

@@ -28,7 +28,7 @@ public sealed class RabbitMqConnection(IConfiguration configuration, ILogger<Rab
 
             await StartupRetry.RunAsync(
                 async () => _connection = await factory.CreateConnectionAsync(ct),
-                logger, "Connecting to RabbitMQ");
+                logger, "Connecting to RabbitMQ", ct: ct);
             return _connection!;
         }
         finally

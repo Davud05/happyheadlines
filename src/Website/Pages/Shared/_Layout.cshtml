@@ -1,3 +1,5 @@
+@using HappyHeadlines.Shared.Features
+@inject IFeatureToggles Toggles
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -23,6 +25,12 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-page="/Index">News</a>
                         </li>
+                        @if (Toggles.IsEnabled(FeatureFlags.SubscriberService))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-page="/Subscribe">Newsletter</a>
+                            </li>
+                        }
                     </ul>
                 </div>
             </div>

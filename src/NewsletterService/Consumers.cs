@@ -1,5 +1,6 @@
 using HappyHeadlines.Shared.Contracts;
 using HappyHeadlines.Shared.Messaging;
+using Npgsql;
 
 namespace NewsletterService;
 
@@ -8,6 +9,40 @@ public sealed class BreakingNewsConsumer(RabbitMqConnection connection, IService
 {
     protected override Task HandleAsync(ArticlePublished message, IServiceProvider services, CancellationToken ct) =>
         services.GetRequiredService<Newsletter>().SendBreakingNewsAsync(message, ct);
+}
+
+public sealed class SubscriptionConsumer(RabbitMqConnection connection, IServiceScopeFactory scopes, ILogger<SubscriptionConsumer> logger)
+    : MessageConsumer<SubscriptionChanged>(connection, scopes, logger, Exchanges.Subscribers, "newsletter-service.subscribers")
+{
+    private readonly ILogger _logger = logger;
+
+    /// <summary>
+    /// While the newsletter database is down the event stays unacknowledged in SubscriberQueue and is retried,
+    /// instead of being dropped after one requeue like other messages.
+    /// </summary>
+    protected override async Task HandleAsync(SubscriptionChanged message, IServiceProvider services, CancellationToken ct)
+    {
+        var scopeFactory = services.GetRequiredService<IServiceScopeFactory>();
+        while (true)
+        {
+            try
+            {
+                // A fresh scope per attempt, so a failed attempt's tracked changes cannot leak into the next.
+                await using var scope = scopeFactory.CreateAsyncScope();
+                await scope.ServiceProvider.GetRequiredService<SubscriberDirectory>().ApplyAsync(message, ct);
+                return;
+            }
+            catch (Exception ex) when (IsTransient(ex) && !ct.IsCancellationRequested)
+            {
+                _logger.LogWarning("Newsletter database unavailable, retrying subscriber {SubscriberId} in 5s: {Reason}",
+                    message.SubscriberId, ex.Message);
+                await Task.Delay(TimeSpan.FromSeconds(5), ct);
+            }
+        }
+    }
+
+    private static bool IsTransient(Exception ex) =>
+        ex is NpgsqlException { IsTransient: true } || ex.InnerException is NpgsqlException { IsTransient: true };
 }
 
 public sealed class DailyNewsletterJob(IServiceScopeFactory scopes, IConfiguration configuration, ILogger<DailyNewsletterJob> logger)

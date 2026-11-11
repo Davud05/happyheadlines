@@ -55,6 +55,7 @@ jobs:
           - { project: DraftService, image: draft-service }
           - { project: PublisherService, image: publisher-service }
           - { project: NewsletterService, image: newsletter-service }
+          - { project: SubscriberService, image: subscriber-service }
           - { project: Webapp, image: webapp }
           - { project: Website, image: website }
     steps:

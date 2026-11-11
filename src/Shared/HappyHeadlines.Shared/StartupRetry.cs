@@ -5,7 +5,8 @@ namespace HappyHeadlines.Shared;
 public static class StartupRetry
 {
     /// <summary>Retries a startup step (e.g. creating a schema) while dependencies are still booting.</summary>
-    public static async Task RunAsync(Func<Task> action, ILogger logger, string description, int attempts = 20)
+    public static async Task RunAsync(Func<Task> action, ILogger logger, string description, int attempts = 20,
+        CancellationToken ct = default)
     {
         for (var attempt = 1; ; attempt++)
         {
@@ -14,11 +15,11 @@ public static class StartupRetry
                 await action();
                 return;
             }
-            catch (Exception ex) when (attempt < attempts)
+            catch (Exception ex) when (attempt < attempts && !ct.IsCancellationRequested)
             {
                 logger.LogWarning("{Description} failed (attempt {Attempt}/{Attempts}): {Error}",
                     description, attempt, attempts, ex.Message);
-                await Task.Delay(TimeSpan.FromSeconds(3));
+                await Task.Delay(TimeSpan.FromSeconds(3), ct);
             }
         }
     }
