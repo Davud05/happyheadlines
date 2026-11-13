@@ -20,6 +20,15 @@ exporters:
       enabled: true
 
 service:
+  # The collector's own counters (accepted spans and metric points), scraped by Prometheus for scripts/measure.ps1.
+  telemetry:
+    metrics:
+      readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
   pipelines:
     traces:
       receivers: [otlp]

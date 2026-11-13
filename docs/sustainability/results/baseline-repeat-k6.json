@@ -1,0 +1,145 @@
+{
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "front page 200": {
+                "name": "front page 200",
+                "path": "::front page 200",
+                "id": "47d49a875c56585d89308155cf22b6d2",
+                "passes": 1200,
+                "fails": 0
+            },
+            "article 200": {
+                "path": "::article 200",
+                "id": "48ddce4a4585ecb501c6020879b62b6d",
+                "passes": 1200,
+                "fails": 0,
+                "name": "article 200"
+            },
+            "comment accepted": {
+                "passes": 240,
+                "fails": 0,
+                "name": "comment accepted",
+                "path": "::comment accepted",
+                "id": "7d4ccac45bb14e1a2dd68b7910a2c996"
+            },
+            "publish accepted": {
+                "name": "publish accepted",
+                "path": "::publish accepted",
+                "id": "a6dbe3a757cb8063b7422cda40344a53",
+                "passes": 24,
+                "fails": 0
+            }
+        },
+        "name": ""
+    },
+    "metrics": {
+        "http_req_waiting": {
+            "avg": 4.58520214559099,
+            "med": 2.874829,
+            "p(95)": 5.164711599999999,
+            "max": 323.558463
+        },
+        "http_req_receiving": {
+            "max": 5.247833,
+            "avg": 0.10018392720450277,
+            "med": 0.076879,
+            "p(95)": 0.14637979999999992
+        },
+        "iteration_duration": {
+            "avg": 10.647917203333305,
+            "med": 6.5084409999999995,
+            "p(95)": 13.794575949999995,
+            "max": 1043.289731
+        },
+        "iterations": {
+            "count": 1200,
+            "rate": 19.96917928147361
+        },
+        "vus": {
+            "value": 1,
+            "min": 1,
+            "max": 2
+        },
+        "http_req_duration": {
+            "avg": 4.7045921302063824,
+            "med": 2.98321,
+            "p(95)": 5.310391199999999,
+            "max": 324.092837
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 2665,
+            "value": 0
+        },
+        "data_sent": {
+            "count": 310035,
+            "rate": 5159.287082109726
+        },
+        "checks": {
+            "passes": 2664,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_duration{expected_response:true}": {
+            "p(95)": 5.310391199999999,
+            "max": 324.092837,
+            "avg": 4.7045921302063824,
+            "med": 2.98321
+        },
+        "http_reqs": {
+            "count": 2665,
+            "rate": 44.34821898760598
+        },
+        "http_req_tls_handshaking": {
+            "p(95)": 0,
+            "max": 0,
+            "avg": 0,
+            "med": 0
+        },
+        "http_req_sending": {
+            "avg": 0.01920605741088181,
+            "med": 0.011763,
+            "p(95)": 0.04015119999999999,
+            "max": 0.356611
+        },
+        "http_req_blocked": {
+            "med": 0.003176,
+            "p(95)": 0.006819799999999995,
+            "max": 1.486609,
+            "avg": 0.007695039774859296
+        },
+        "data_received": {
+            "count": 40738361,
+            "rate": 677926.3620353272
+        },
+        "http_req_connecting": {
+            "avg": 0.0019102645403377115,
+            "med": 0,
+            "p(95)": 0,
+            "max": 0.32518
+        },
+        "vus_max": {
+            "max": 20,
+            "value": 20,
+            "min": 20
+        }
+    },
+    "setup_data": {
+        "ids": [
+            "abcb166d-9de4-41ca-85f2-adeb10d1dc82",
+            "b077ce6f-3dd6-41c4-860d-25bd35d30e1c",
+            "42eb9cac-2ea2-4f6b-b19e-07de797efc25",
+            "2f0964c0-d1b0-4e21-adbd-aa61ff1ae941",
+            "32055940-a9d0-4aee-bfac-56f0aa27cedd",
+            "366a7993-53ca-4416-82a1-ef13cea3593d",
+            "17acad73-e42c-4229-be19-df3d3cd6accb",
+            "02e1bda6-83db-4826-a54a-5df49a30ba98",
+            "a0000000-0000-0000-0000-000008000001",
+            "a0000000-0000-0000-0000-000008000002",
+            "a0000000-0000-0000-0000-000008000003"
+        ]
+    }
+}
