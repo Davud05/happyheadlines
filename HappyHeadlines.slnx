@@ -11,6 +11,7 @@
     <Project Path="src/Website/Website.csproj" />
   </Folder>
   <Folder Name="/src/Shared/">
+    <Project Path="src/Shared/HappyHeadlines.Shared.FeatureToggles/HappyHeadlines.Shared.FeatureToggles.csproj" />
     <Project Path="src/Shared/HappyHeadlines.Shared/HappyHeadlines.Shared.csproj" />
   </Folder>
   <Folder Name="/tests/">

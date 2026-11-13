@@ -2,13 +2,14 @@
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG SERVICE
 WORKDIR /src
-COPY HappyHeadlines.slnx ./
+COPY HappyHeadlines.slnx Directory.Build.props ./
 COPY src/ src/
-RUN dotnet publish src/${SERVICE}/${SERVICE}.csproj -c Release -o /app
+# The chiseled runtime has no shell to expand $SERVICE at startup, so every service's executable gets the same name.
+RUN dotnet publish src/${SERVICE}/${SERVICE}.csproj -c Release -o /app \
+    && mv /app/${SERVICE} /app/service
 
-FROM mcr.microsoft.com/dotnet/aspnet:10.0
-ARG SERVICE
-ENV SERVICE_DLL=${SERVICE}.dll
+# Chiseled: only the .NET runtime and its native dependencies. No shell or package manager, runs as non-root.
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble-chiseled
 WORKDIR /app
 COPY --from=build /app .
-ENTRYPOINT ["sh", "-c", "exec dotnet $SERVICE_DLL"]
+ENTRYPOINT ["./service"]

@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\HappyHeadlines.Shared\HappyHeadlines.Shared.csproj" />
+    <ProjectReference Include="..\Shared\HappyHeadlines.Shared.FeatureToggles\HappyHeadlines.Shared.FeatureToggles.csproj" />
   </ItemGroup>
 
   <ItemGroup>

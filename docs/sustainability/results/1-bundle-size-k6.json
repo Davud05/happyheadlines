@@ -1,0 +1,151 @@
+{
+    "root_group": {
+        "name": "",
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "front page 200": {
+                "name": "front page 200",
+                "path": "::front page 200",
+                "id": "47d49a875c56585d89308155cf22b6d2",
+                "passes": 1201,
+                "fails": 0
+            },
+            "article 200": {
+                "id": "48ddce4a4585ecb501c6020879b62b6d",
+                "passes": 1201,
+                "fails": 0,
+                "name": "article 200",
+                "path": "::article 200"
+            },
+            "comment accepted": {
+                "name": "comment accepted",
+                "path": "::comment accepted",
+                "id": "7d4ccac45bb14e1a2dd68b7910a2c996",
+                "passes": 241,
+                "fails": 0
+            },
+            "publish accepted": {
+                "name": "publish accepted",
+                "path": "::publish accepted",
+                "id": "a6dbe3a757cb8063b7422cda40344a53",
+                "passes": 25,
+                "fails": 0
+            }
+        }
+    },
+    "metrics": {
+        "http_req_duration{expected_response:true}": {
+            "avg": 4.216755345447731,
+            "med": 2.809429,
+            "p(95)": 5.2389204,
+            "max": 331.947184
+        },
+        "http_req_connecting": {
+            "avg": 0.0020093930310977897,
+            "med": 0,
+            "p(95)": 0,
+            "max": 0.279442
+        },
+        "data_sent": {
+            "count": 310747,
+            "rate": 5170.093726550413
+        },
+        "data_received": {
+            "count": 41419408,
+            "rate": 689120.8007100052
+        },
+        "http_req_waiting": {
+            "p(95)": 5.083859999999999,
+            "max": 331.564818,
+            "avg": 4.112791527163734,
+            "med": 2.698725
+        },
+        "vus_max": {
+            "value": 20,
+            "min": 20,
+            "max": 20
+        },
+        "http_reqs": {
+            "rate": 44.405835474398955,
+            "count": 2669
+        },
+        "http_req_blocked": {
+            "avg": 0.008518777070063667,
+            "med": 0.002986,
+            "p(95)": 0.006292,
+            "max": 3.117907
+        },
+        "http_req_sending": {
+            "avg": 0.017313739228175352,
+            "med": 0.009748,
+            "p(95)": 0.038456399999999995,
+            "max": 0.249895
+        },
+        "http_req_failed": {
+            "fails": 2669,
+            "passes": 0,
+            "value": 0
+        },
+        "http_req_duration": {
+            "max": 331.947184,
+            "avg": 4.216755345447731,
+            "med": 2.809429,
+            "p(95)": 5.2389204
+        },
+        "iterations": {
+            "count": 1201,
+            "rate": 19.981794081960714
+        },
+        "iteration_duration": {
+            "avg": 9.557409748542879,
+            "med": 6.178981,
+            "p(95)": 12.769598,
+            "max": 971.898854
+        },
+        "checks": {
+            "passes": 2668,
+            "fails": 0,
+            "value": 1
+        },
+        "http_req_tls_handshaking": {
+            "avg": 0,
+            "med": 0,
+            "p(95)": 0,
+            "max": 0
+        },
+        "http_req_receiving": {
+            "avg": 0.086650079055826,
+            "med": 0.077921,
+            "p(95)": 0.1336436,
+            "max": 3.24057
+        },
+        "vus": {
+            "value": 1,
+            "min": 0,
+            "max": 2
+        }
+    },
+    "setup_data": {
+        "ids": [
+            "2d7fdc0e-67f2-4457-b586-143d361724a1",
+            "9eadc81c-41ea-49cc-9689-6b049d682249",
+            "490c3f78-d3eb-47c6-9526-caf9a9adac8f",
+            "acc3f3b9-f2f6-4e86-93b7-b3a43bb2b2bc",
+            "4208caca-148b-462b-92fd-bb0b56177d15",
+            "4cc2cdbe-713e-427c-a0e1-d658b463e452",
+            "abcb166d-9de4-41ca-85f2-adeb10d1dc82",
+            "b077ce6f-3dd6-41c4-860d-25bd35d30e1c",
+            "42eb9cac-2ea2-4f6b-b19e-07de797efc25",
+            "2f0964c0-d1b0-4e21-adbd-aa61ff1ae941",
+            "32055940-a9d0-4aee-bfac-56f0aa27cedd",
+            "366a7993-53ca-4416-82a1-ef13cea3593d",
+            "17acad73-e42c-4229-be19-df3d3cd6accb",
+            "02e1bda6-83db-4826-a54a-5df49a30ba98",
+            "a0000000-0000-0000-0000-000008000001",
+            "a0000000-0000-0000-0000-000008000002",
+            "a0000000-0000-0000-0000-000008000003"
+        ]
+    }
+}
