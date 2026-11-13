@@ -1,0 +1,154 @@
+{
+    "metrics": {
+        "vus": {
+            "value": 0,
+            "min": 0,
+            "max": 1
+        },
+        "vus_max": {
+            "min": 20,
+            "max": 20,
+            "value": 20
+        },
+        "http_req_duration{expected_response:true}": {
+            "avg": 4.03833047396028,
+            "med": 2.510777,
+            "p(95)": 4.496403,
+            "max": 316.553225
+        },
+        "http_reqs": {
+            "count": 2669,
+            "rate": 44.41539509344189
+        },
+        "http_req_failed": {
+            "passes": 0,
+            "fails": 2669,
+            "value": 0
+        },
+        "data_sent": {
+            "count": 310747,
+            "rate": 5171.206736268935
+        },
+        "http_req_receiving": {
+            "avg": 0.07804294642188088,
+            "med": 0.064685,
+            "p(95)": 0.11290459999999998,
+            "max": 3.652819
+        },
+        "http_req_connecting": {
+            "avg": 0.002009203821656051,
+            "med": 0,
+            "p(95)": 0,
+            "max": 0.260596
+        },
+        "http_req_tls_handshaking": {
+            "med": 0,
+            "p(95)": 0,
+            "max": 0,
+            "avg": 0
+        },
+        "iterations": {
+            "count": 1201,
+            "rate": 19.98609573144388
+        },
+        "iteration_duration": {
+            "avg": 9.1438880607827,
+            "med": 5.14344,
+            "p(95)": 12.852685,
+            "max": 991.46126
+        },
+        "http_req_blocked": {
+            "med": 0.002685,
+            "p(95)": 0.005936999999999999,
+            "max": 1.043349,
+            "avg": 0.0074723578119145475
+        },
+        "http_req_duration": {
+            "avg": 4.03833047396028,
+            "med": 2.510777,
+            "p(95)": 4.496403,
+            "max": 316.553225
+        },
+        "http_req_sending": {
+            "avg": 0.017515227426002256,
+            "med": 0.009488,
+            "p(95)": 0.038634999999999996,
+            "max": 0.35599
+        },
+        "http_req_waiting": {
+            "max": 316.141213,
+            "avg": 3.9427723001124053,
+            "med": 2.412465,
+            "p(95)": 4.405786199999997
+        },
+        "data_received": {
+            "count": 36609666,
+            "rate": 609229.2167961582
+        },
+        "checks": {
+            "passes": 2668,
+            "fails": 0,
+            "value": 1
+        }
+    },
+    "setup_data": {
+        "ids": [
+            "33670ef3-26ed-4b52-81e1-d3359eb1e039",
+            "87976530-e5a4-47b7-ba55-40c4829cc026",
+            "5b61963c-ee32-45b0-9b1f-ff5263135ba3",
+            "7bfcad22-6e71-4133-8dff-f34d2320abd3",
+            "1f6a1276-dae0-473f-bfb6-01f121b35773",
+            "1fdb0da4-c1fe-4b4f-9da7-c4eb81cc3eab",
+            "2b99aed0-32ff-4094-a507-d6d24edcb758",
+            "4447fef6-cb9c-4991-99f1-c76bcf2eb17f",
+            "39b0b338-9607-4fd0-baa1-4018dad3635f",
+            "fd2d3577-7a48-4193-a215-87ddfd6ae5bb",
+            "dd3f3241-380d-4691-ba35-937e4e05a9c4",
+            "0cce12cf-13f9-47a4-b906-d4efd5fd7eef",
+            "64938781-cb99-4e9e-92ca-5a6451f651f9",
+            "ca392ada-2962-4431-9909-bc880c8bc370",
+            "2d7fdc0e-67f2-4457-b586-143d361724a1",
+            "9eadc81c-41ea-49cc-9689-6b049d682249",
+            "490c3f78-d3eb-47c6-9526-caf9a9adac8f",
+            "acc3f3b9-f2f6-4e86-93b7-b3a43bb2b2bc",
+            "4208caca-148b-462b-92fd-bb0b56177d15",
+            "4cc2cdbe-713e-427c-a0e1-d658b463e452"
+        ]
+    },
+    "root_group": {
+        "path": "",
+        "id": "d41d8cd98f00b204e9800998ecf8427e",
+        "groups": {},
+        "checks": {
+            "front page 200": {
+                "name": "front page 200",
+                "path": "::front page 200",
+                "id": "47d49a875c56585d89308155cf22b6d2",
+                "passes": 1201,
+                "fails": 0
+            },
+            "article 200": {
+                "id": "48ddce4a4585ecb501c6020879b62b6d",
+                "passes": 1201,
+                "fails": 0,
+                "name": "article 200",
+                "path": "::article 200"
+            },
+            "comment accepted": {
+                "path": "::comment accepted",
+                "id": "7d4ccac45bb14e1a2dd68b7910a2c996",
+                "passes": 241,
+                "fails": 0,
+                "name": "comment accepted"
+            },
+            "publish accepted": {
+                "name": "publish accepted",
+                "path": "::publish accepted",
+                "id": "a6dbe3a757cb8063b7422cda40344a53",
+                "passes": 25,
+                "fails": 0
+            }
+        },
+        "name": ""
+    }
+}

@@ -1,0 +1,40 @@
+{
+    "label":  "experiment-server-gc-no-datas",
+    "measuredAt":  "2026-11-13 01:03:51Z",
+    "imagesMiB":  {
+                      "article-service":  189,
+                      "comment-service":  190,
+                      "profanity-service":  185,
+                      "draft-service":  185,
+                      "publisher-service":  179,
+                      "newsletter-service":  189,
+                      "subscriber-service":  188,
+                      "website":  201,
+                      "webapp":  198
+                  },
+    "imagesTotalMiB":  1704,
+    "idleDotnet":  {
+                       "cpuAvgPercent":  2.2,
+                       "memAvgMiB":  555,
+                       "memMaxMiB":  557
+                   },
+    "loadDotnet":  {
+                       "cpuAvgPercent":  53.9,
+                       "memAvgMiB":  954,
+                       "memMaxMiB":  1165
+                   },
+    "loadMonitoring":  {
+                           "cpuAvgPercent":  1.7,
+                           "memAvgMiB":  478,
+                           "memMaxMiB":  482
+                       },
+    "logEvents":  336,
+    "logKiB":  58,
+    "infraLogEvents":  7,
+    "traceSpans":  1522,
+    "metricPoints":  878,
+    "requests":  2665,
+    "failedRate":  0,
+    "responseAvgMs":  4.1,
+    "responseP95Ms":  4.6
+}

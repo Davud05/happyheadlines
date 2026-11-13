@@ -5,4 +5,14 @@
     <InvariantGlobalization>true</InvariantGlobalization>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <!--
+      ASP.NET Core defaults to Server GC: one heap and GC thread per core, sized for a single app owning the machine.
+      Here ~11 small services share one host, so Workstation GC (one heap, collections on the allocating thread)
+      without the background GC thread fits better. Revisit if a service ever gets a large heap or strict latency goals.
+    -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+  </PropertyGroup>
+
 </Project>
