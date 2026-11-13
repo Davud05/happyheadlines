@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using OpenTelemetry.Metrics;
@@ -21,6 +22,7 @@ public static class ObservabilityExtensions
         var seqUrl = builder.Configuration["Seq:Url"] ?? "http://localhost:5341";
         var otlpEndpoint = new Uri(builder.Configuration["Otlp:Endpoint"] ?? "http://localhost:4317");
         var instanceId = builder.Configuration["INSTANCE_ID"] ?? Environment.MachineName;
+        var sampleRatio = builder.Configuration.GetValue("Otlp:SampleRatio", 1.0);
 
         builder.Services.AddSerilog(config => config
             .MinimumLevel.Information()
@@ -38,6 +40,8 @@ public static class ObservabilityExtensions
         builder.Services.AddOpenTelemetry()
             .ConfigureResource(resource => resource.AddService(serviceName, serviceInstanceId: instanceId))
             .WithTracing(tracing => tracing
+                // Head sampling: the first service decides, downstream services follow the parent so traces stay whole.
+                .SetSampler(new ParentBasedSampler(new TraceIdRatioBasedSampler(sampleRatio)))
                 .AddSource(serviceName)
                 .AddSource(Telemetry.MessagingSourceName)
                 .AddAspNetCoreInstrumentation(options => options.Filter = ctx => !IsInfrastructurePath(ctx))
@@ -56,12 +60,15 @@ public static class ObservabilityExtensions
 
     public static WebApplication UseObservability(this WebApplication app)
     {
+        // Successful requests are already counted by the metrics and sampled by the traces,
+        // so only failed and slow requests are worth a log event.
+        var slowRequestMs = app.Configuration.GetValue("Logging:SlowRequestMs", 1000.0);
         app.UseSerilogRequestLogging(options =>
         {
-            options.GetLevel = (ctx, _, ex) =>
+            options.GetLevel = (ctx, elapsedMs, ex) =>
                 ex is not null || ctx.Response.StatusCode >= 500 ? LogEventLevel.Error
-                : IsInfrastructurePath(ctx) ? LogEventLevel.Verbose
-                : LogEventLevel.Information;
+                : elapsedMs > slowRequestMs && !IsInfrastructurePath(ctx) ? LogEventLevel.Warning
+                : LogEventLevel.Debug;
         });
         app.MapHealthChecks("/health");
         return app;

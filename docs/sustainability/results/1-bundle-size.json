@@ -35,5 +35,6 @@
     "requests":  2669,
     "failedRate":  0,
     "responseAvgMs":  4.2,
-    "responseP95Ms":  5.2
+    "responseP95Ms":  5.2,
+    "infraLogEvents":  3633
 }

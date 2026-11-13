@@ -110,6 +110,8 @@ foreach ($service in $dotnetServices) {
     $logLines += @($lines).Count
     $logBytes += ($lines | Measure-Object -Property Length -Sum).Sum
 }
+$infraServices = docker compose ps --services | Where-Object { $dotnetServices -notcontains $_ -and $monitoring -notcontains $_ }
+$infraLogLines = @(docker compose logs --no-log-prefix --since $start.ToString("o") --until $end.ToString("o") @infraServices 2>$null).Count
 
 $k6 = Get-Content $k6File | ConvertFrom-Json
 $duration = $k6.metrics.http_req_duration
@@ -123,6 +125,7 @@ $result = [ordered]@{
     loadMonitoring  = Summarize $load $monitoring
     logEvents       = $logLines
     logKiB          = [math]::Round($logBytes / 1KB, 0)
+    infraLogEvents  = $infraLogLines
     traceSpans      = $spans
     metricPoints    = $points
     requests        = $k6.metrics.http_reqs.count

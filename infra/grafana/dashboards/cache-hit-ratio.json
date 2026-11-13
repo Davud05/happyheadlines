@@ -3,7 +3,7 @@
   "title": "HappyHeadlines - Cache hit ratio",
   "tags": ["happyheadlines", "cache"],
   "timezone": "browser",
-  "refresh": "5s",
+  "refresh": "30s",
   "time": { "from": "now-15m", "to": "now" },
   "schemaVersion": 39,
   "editable": true,

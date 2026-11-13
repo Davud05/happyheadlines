@@ -5,27 +5,33 @@ x-postgres: &postgres
   environment: &postgres-env
     POSTGRES_USER: hh
     POSTGRES_PASSWORD: hh
+  # Polls quickly while starting, then only every 30 s. -d avoids a FATAL "database hh does not exist" log line per check.
   healthcheck:
-    test: ["CMD-SHELL", "pg_isready -U hh"]
-    interval: 5s
+    test: ["CMD-SHELL", "pg_isready -U hh -d $${POSTGRES_DB}"]
+    interval: 30s
+    start_period: 60s
+    start_interval: 2s
     timeout: 3s
-    retries: 20
+    retries: 3
   restart: unless-stopped
 
 x-redis: &redis
   image: redis:8-alpine
   healthcheck:
     test: ["CMD", "redis-cli", "ping"]
-    interval: 5s
+    interval: 30s
+    start_period: 30s
+    start_interval: 2s
     timeout: 3s
-    retries: 20
+    retries: 3
   restart: unless-stopped
 
 x-dotnet-env: &dotnet-env
   Seq__Url: http://seq:5341
   Otlp__Endpoint: http://otel-collector:4317
+  Otlp__SampleRatio: "0.1"
   RabbitMq__Host: rabbitmq
-  OTEL_METRIC_EXPORT_INTERVAL: "5000"
+  OTEL_METRIC_EXPORT_INTERVAL: "30000"
 
 # Release toggles. The API key is created once in the FeatureHub admin console and stored in .env (see README).
 # Without it every toggle is off and the services run as before.
@@ -198,9 +204,11 @@ services:
     volumes: [rabbitmq:/var/lib/rabbitmq]
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
-      interval: 5s
+      interval: 30s
+      start_period: 90s
+      start_interval: 3s
       timeout: 5s
-      retries: 30
+      retries: 3
     restart: unless-stopped
 
   # ---------------------------------------------------------------- SubscriberService swimlane

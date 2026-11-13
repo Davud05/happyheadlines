@@ -1,0 +1,40 @@
+{
+    "label":  "2-logging",
+    "measuredAt":  "2026-11-13 00:52:31Z",
+    "imagesMiB":  {
+                      "article-service":  189,
+                      "comment-service":  190,
+                      "profanity-service":  185,
+                      "draft-service":  185,
+                      "publisher-service":  179,
+                      "newsletter-service":  189,
+                      "subscriber-service":  188,
+                      "website":  201,
+                      "webapp":  198
+                  },
+    "imagesTotalMiB":  1704,
+    "idleDotnet":  {
+                       "cpuAvgPercent":  1.6,
+                       "memAvgMiB":  561,
+                       "memMaxMiB":  562
+                   },
+    "loadDotnet":  {
+                       "cpuAvgPercent":  53.4,
+                       "memAvgMiB":  835,
+                       "memMaxMiB":  920
+                   },
+    "loadMonitoring":  {
+                           "cpuAvgPercent":  1.8,
+                           "memAvgMiB":  442,
+                           "memMaxMiB":  444
+                       },
+    "logEvents":  341,
+    "logKiB":  59,
+    "infraLogEvents":  14,
+    "traceSpans":  1327,
+    "metricPoints":  793,
+    "requests":  2669,
+    "failedRate":  0,
+    "responseAvgMs":  4.0,
+    "responseP95Ms":  4.4
+}
