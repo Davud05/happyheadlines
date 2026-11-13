@@ -103,8 +103,12 @@ Responses from both services carry an `X-Cache: HIT` or `X-Cache: MISS` header. 
 - Grafana (cache hit ratio dashboard): http://localhost:3000
 - Prometheus (metrics): http://localhost:9090
 
+Only failed (5xx) and slow (> `Logging__SlowRequestMs`, default 1000 ms) requests are logged, and 10 % of traces are
+kept (`Otlp__SampleRatio`). Set `Otlp__SampleRatio: "1.0"` in `docker-compose.yml` to trace everything while debugging.
+
 ## Docs
 
 - [C4 context diagram](docs/c4/context.png)
 - [C4 container diagram](docs/c4/container.png)
 - [ER diagram](docs/er/er-diagram.png)
+- [Week 45: green architecture tactics and measurements](docs/sustainability/week45.md)
